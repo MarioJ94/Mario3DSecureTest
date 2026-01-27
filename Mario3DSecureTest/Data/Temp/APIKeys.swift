@@ -1,4 +1,5 @@
+// Put your keys here
 struct APIKeys {
-    let privateKey = ""
-    let publicKey = ""
+    let publicKeyPart1 = ""
+    let privateKeyPat2 = ""
 }

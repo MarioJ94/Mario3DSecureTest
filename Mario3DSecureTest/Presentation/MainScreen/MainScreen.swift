@@ -1,5 +1,10 @@
 import SwiftUI
 
+enum NavigationRoute: Hashable {
+    case challenge(URL)
+    case result(Bool)
+}
+
 struct MainScreen: View {
     private let viewModel: MainScreenViewModelProtocol
     private let navigator: MainScreenNavigatorProtocol
@@ -13,7 +18,7 @@ struct MainScreen: View {
     @State private var validation: CardInputState = .none
     @State private var icon: String? = nil
     @State private var showPaymentError: Bool = false
-    @State private var verificationURL: URL? = nil
+    @State private var navigation: NavigationRoute? = nil
 
     init(viewModel: MainScreenViewModelProtocol,
          navigator: MainScreenNavigatorProtocol) {
@@ -32,23 +37,40 @@ struct MainScreen: View {
             }
             .onReceive(viewModel.paymentStatusPublisher) { value in
                 guard let value else {
-                    return verificationURL = nil
+                    return navigation = nil
                 }
                 switch value {
                 case let .pending(redirectURL):
-                    verificationURL = redirectURL
+                    if let redirectURL {
+                        navigation = .challenge(redirectURL)
+                    }
                 case .unknown:
-                    verificationURL = nil
+                    navigation = nil
                 }
             }
     }
     
+    let successURL = "https://example.com/payments/success"
+    let failureURL = "https://example.com/payments/fail"
+    @State private var resultView: Bool?
+
     @ViewBuilder
     var navigationStack: some View {
         NavigationStack {
             content
-                .navigationDestination(item: $verificationURL, destination: { value in
-                    SecondScreen(url: value)
+                .navigationDestination(item: $navigation, destination: { value in
+                    switch value {
+                    case .challenge(let url):
+                        SecondScreen(
+                            url: url,
+                            onChallengeResult: { result in
+                                navigation = .result(result)
+                            },
+                            successURL: successURL,
+                            failureURL: failureURL)
+                    case .result(let success):
+                        ResultScreen(isSuccess: success)
+                    }
                 })
         }
     }

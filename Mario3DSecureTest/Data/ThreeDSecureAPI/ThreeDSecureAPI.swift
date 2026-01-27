@@ -1,16 +1,15 @@
 import Foundation
 
 final class ThreeDSecureAPI: ThreeDSecureAPIProtocol {
-    let hostPrefix: String = ""
+    let hostPrefix: String = "5s5vhamy"
     var host: String {
         "\(hostPrefix).api.sandbox.checkout.com"
     }
     
-    
     func requestToken(cardNumber: String,
                       expiryMonth: String,
                       expiryYear: String,
-                      cvv: String) async throws -> Data {
+                      cvv: String) async throws -> APIResponse {
         let endpoint = ThreeDSecureToken(host: host,
                                          cardNumber: cardNumber,
                                          expiryMonth: expiryMonth,
@@ -19,26 +18,24 @@ final class ThreeDSecureAPI: ThreeDSecureAPIProtocol {
         guard let request = try? endpoint.buildRequest() else {
             throw URLError(.badURL)
         }
-        return try mockedResponse(cardNumber: cardNumber,
-                                  expiryMonth: expiryMonth,
-                                  expiryYear: expiryYear,
-                                  cvv: cvv)
-//        return try await performRequest(request).data
+//        return try mockedResponse(cardNumber: cardNumber, expiryMonth: expiryMonth, expiryYear: expiryYear, cvv: cvv)
+        return try await performRequest(request)
     }
     
-    func performPayment(token: String) async throws -> Data {
+    func performPayment(token: String) async throws -> APIResponse {
         let endpoint = ThreeDSecurePayment(host: host,
                                            token: token)
         guard let request = try? endpoint.buildRequest() else {
             throw URLError(.badURL)
         }
-        return try mockedResponse(token: token)
-//        return try await performRequest(request).data
+//        return try mockedResponse(token: token)
+        return try await performRequest(request)
     }
 }
 
 private extension ThreeDSecureAPI {
     final class ThreeDSecureToken: EndpointProtocol {
+        let scheme: String = "https"
         let host: String
         let path: String = "/tokens"
         let type: String = "card"
@@ -68,9 +65,17 @@ private extension ThreeDSecureAPI {
                 return try JSONSerialization.data(withJSONObject: body)
             }
         }
+        
+        var headers: [String : String]? {
+            [
+                "Content-Type": "application/json",
+                "Authorization" : "Bearer \(APIKeys().publicKeyPart1)"
+            ]
+        }
     }
     
     final class ThreeDSecurePayment: EndpointProtocol {
+        let scheme: String = "https"
         let host: String
         let path: String = "/payments"
         let token: String
@@ -98,6 +103,13 @@ private extension ThreeDSecureAPI {
                 ] as [String : Any]
                 return try JSONSerialization.data(withJSONObject: body)
             }
+        }
+        
+        var headers: [String : String]? {
+            [
+                "Content-Type": "application/json",
+                "Authorization" : "Bearer \(APIKeys().privateKeyPat2)"
+            ]
         }
     }
 }

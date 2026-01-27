@@ -22,17 +22,17 @@ final class ThreeDSecureRepositoryRemoteDataSource: ThreeDSecureRepositoryRemote
                   expiryMonth: String,
                   expiryYear: String,
                   cvv: String) async throws -> GetTokenResponseModel {
-        let data = try await service.requestToken(cardNumber: cardNumber,
+        let response = try await service.requestToken(cardNumber: cardNumber,
                                                   expiryMonth: expiryMonth,
                                                   expiryYear: expiryYear,
                                                   cvv: cvv)
-        let model = try mapper.mapGetToken(data)
+        let model = try mapper.mapGetToken(response.data)
         return model
     }
     
     func performPayment(token: String) async throws -> RequestPaymentResponseModel {
-        let data = try await service.performPayment(token: token)
-        let model = try mapper.mapPayment(data)
+        let response = try await service.performPayment(token: token)
+        let model = try mapper.mapPayment(response.data)
         return model
     }
 }

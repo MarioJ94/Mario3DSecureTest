@@ -115,6 +115,7 @@ extension MainScreenViewModel: MainScreenViewModelProtocol {
                 let paymentResult = try await makePaymentUseCase.run(.init(token: tokenResponse.token))
                 handlePaymentResponse(paymentResult)
             } catch {
+                print(error.localizedDescription)
                 showPaymentError = true
             }
         }

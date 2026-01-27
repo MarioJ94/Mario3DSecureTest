@@ -15,7 +15,7 @@ protocol EndpointProtocol {
 
 extension EndpointProtocol {
     var scheme: String { "http" }
-    var port: Int? { 80 }
+    var port: Int? { nil }
     var httpMethod: Endpoint.HTTPMethod { .get }
     var queryItems: [URLQueryItem]? { nil }
     var headers: [String:String]? { nil }
